@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const slugify = require('slugify')
 
 // if field added that is not in the model, it will not add to the database
 // @required fields <= name, description, address
@@ -100,7 +101,15 @@ const BootcampSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+})
 
+// Create bootcamp slug from the name
+// no arrow functions, problem in binding this
+//pre <= execute before saved ,  post <= execute after saved 
+// this <= is the object we entered
+BootcampSchema.pre('save', function (next) {
+    this.slug = slugify(this.name, { lower: true })
+    next()
 })
 
 // 1st param: model name
