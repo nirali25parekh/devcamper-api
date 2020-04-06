@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const slugify = require('slugify')
+const geocoder = require('../utils/geocoder')
 
 // if field added that is not in the model, it will not add to the database
 // @required fields <= name, description, address
@@ -103,14 +104,39 @@ const BootcampSchema = new mongoose.Schema({
     }
 })
 
+
+/* middlewares to change the data before putting in database
+pre <= execute before saved ,  post <= execute after saved 
+ no arrow functions, problem in binding this 
+  this <= is the object we entered*/
+
+
 // Create bootcamp slug from the name
-// no arrow functions, problem in binding this
-//pre <= execute before saved ,  post <= execute after saved 
-// this <= is the object we entered
 BootcampSchema.pre('save', function (next) {
     this.slug = slugify(this.name, { lower: true })
     next()
 })
+
+//@ compulsory fields in location => type and coordinates
+//Geocode and location field -> see node-geocoder library docs
+BootcampSchema.pre('save', async function (next) {
+    console.log('API key', process.env.GEOCODER_API_KEY)
+    const loc = await geocoder.geocode(this.address)
+    this.location = {
+        type: 'Point',
+        coordinates: [loc[0].longitude, loc[0].latitude],
+        formattedAddress: loc[0].formattedAddress,
+        street: loc[0].streetName,
+        city: loc[0].city,
+        state: loc[0].stateCode,
+        zipcode: loc[0].zipcode,
+        country: loc[0].countryCode,
+    }
+    next()
+})
+
+// no need to send the address now that location is there
+this.address = undefined
 
 // 1st param: model name
 // 2nd param: schema name

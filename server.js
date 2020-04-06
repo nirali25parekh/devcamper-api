@@ -8,11 +8,13 @@ const errorHandler = require('./middleware/error')
 //database files
 const connectDB = require('./config/db')
 
-//Route files
-const bootcamps = require('./routes/bootcamps')
+
 
 //load env variables, process.env
 dotenv.config({ path: './config/config.env' })
+
+//Route files
+const bootcamps = require('./routes/bootcamps')
 
 //connect to Database
 connectDB()
