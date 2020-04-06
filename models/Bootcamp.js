@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 
+// if field added that is not in the model, it will not add to the database
+// @required fields <= name, description, address
 const BootcampSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -8,7 +10,7 @@ const BootcampSchema = new mongoose.Schema({
         trim: true,
         maxlength: [50, 'Name cannot be more than 50 characters']
     },
-    slug: String, //Devcentral Bootcamp becomes devcentral-bootcamp (for urls)
+    slug: String, //eg. Name Devcentral Bootcamp becomes devcentral-bootcamp (for urls)
     description: {
         type: String,
         required: [true, 'Please add a description'],
@@ -43,11 +45,9 @@ const BootcampSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'],
-            required: true,
         },
         coordinates: {
             type: [Number],
-            required: true,
             index: '2dsphere',
         },
         formattedAddress: String,

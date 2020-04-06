@@ -3,8 +3,9 @@ const express = require('express')
 const dotenv = require('dotenv')
 const morgan = require('morgan')
 const colors = require('colors')
+const errorHandler = require('./middleware/error')
 
-//databse files
+//database files
 const connectDB = require('./config/db')
 
 //Route files
@@ -19,6 +20,9 @@ connectDB()
 //initialize app
 const app = express()
 
+// Body parser (included in express)
+app.use(express.json())
+
 //Dev logging middleware
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
@@ -26,6 +30,9 @@ if (process.env.NODE_ENV === 'development') {
 
 //mount routers
 app.use('/api/v1/bootcamps', bootcamps)  //middleware tells app that whenever you see this url, go to that file
+
+// mount myMiddleware
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
 
