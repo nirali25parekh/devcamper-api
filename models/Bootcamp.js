@@ -120,7 +120,6 @@ BootcampSchema.pre('save', function (next) {
 //@ compulsory fields in location => type and coordinates
 //Geocode and location field -> see node-geocoder library docs
 BootcampSchema.pre('save', async function (next) {
-    console.log('API key', process.env.GEOCODER_API_KEY)
     const loc = await geocoder.geocode(this.address)
     this.location = {
         type: 'Point',
