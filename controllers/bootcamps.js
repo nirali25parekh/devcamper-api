@@ -3,12 +3,19 @@ const asyncHandler = require('../middleware/async')
 const geocoder = require('../utils/geocoder')
 const ErrorResponse = require('../utils/errorResponse')
 
+
+// @example     /api/v1/bootcamps?<queries>
 // @desc        Get all bootcamps
 // @route       GET /api/v1/bootcamps
 // @access      Public
+// @queries     carreers[in]=Business   averageCost[lte]=10000
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-
-    const bootcamps = await Bootcamp.find()
+    /*filtering : mongo db docs: db.inventory.find( { qty: { $lte: 20 } } )
+    we got logs: { qty: { lte: 20 }}
+    we need $ sign before lte (less than equal to) */
+    let queryStr = JSON.stringify(req.query)
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+    const bootcamps = await Bootcamp.find(JSON.parse(queryStr))
     res.status(200).json({
         success: true,
         count: bootcamps.length,
