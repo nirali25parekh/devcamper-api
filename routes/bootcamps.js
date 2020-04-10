@@ -9,7 +9,14 @@ const {
     getBootcampsInRadius
 } = require('../controllers/bootcamps')
 
+//Include other resource routers
+const courseRouter = require('./courses')
+
 const router = express.Router()
+
+// Re-route into other resource routers
+// means if 'api/v1/bootcamps/:bootcampId/courses' hit, goto courseRouter
+router.use('/:bootcampId/courses', courseRouter)
 
 // base url => '/api/v1/bootcamps' app.use() middleware in server.js
 router

@@ -11,7 +11,7 @@ const ErrorResponse = require('../utils/errorResponse')
 // @queries         carreers[in]=Business   averageCost[lte]=10000  housing=true
 // @SelectQuery     select=name,description
 // @SortQuery       sort=averageCost        sort=-name
-exports.getBootcamps = asyncHandler(async (req, res, next) => {
+exports.getBootcamps = asyncHandler(async (req, res, next) => {  
     let query;
 
     // Copy req.query
@@ -36,7 +36,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`)
 
     //Finding resource
-    query = Bootcamp.find(JSON.parse(queryStr))
+    query = Bootcamp.find(JSON.parse(queryStr)).populate('courses')
 
     /* SELECTION:
     url:  select=name,description
@@ -81,7 +81,7 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     }
      
     // if already on page 1, don't show pagination.prev
-    if(startEndex > 0){
+    if(startIndex > 0){
         pagination.prev = {
             page: page - 1,
             limit
@@ -158,10 +158,13 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 // @access      Private
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     // (req.body)  <= gives the bootcamp object in the body with body parser express middleware 
-    const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id)
+    const bootcamp = await Bootcamp.findById(req.params.id)
     if (!bootcamp) {
         return next(new ErrorResponse(`Bootcamp Not Found of id ${req.params.id}`, 404))
     }
+
+    bootcamp.remove()
+    
     res
         .status(200)
         .json({

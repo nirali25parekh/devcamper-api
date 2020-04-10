@@ -8,13 +8,12 @@ const errorHandler = require('./middleware/error')
 //database files
 const connectDB = require('./config/db')
 
-
-
 //load env variables, process.env
 dotenv.config({ path: './config/config.env' })
 
 //Route files
 const bootcamps = require('./routes/bootcamps')
+const courses = require('./routes/courses')
 
 //connect to Database
 connectDB()
@@ -31,9 +30,10 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 //mount routers
-app.use('/api/v1/bootcamps', bootcamps)  //middleware tells app that whenever you see this url, go to that file
+app.use('/api/v1/courses', courses)
+app.use('/api/v1/bootcamps', bootcamps)  
 
-// mount myMiddleware
+// mount myMiddleware  //middleware tells app that whenever you see this url, go to that file
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000

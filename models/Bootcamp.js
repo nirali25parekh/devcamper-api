@@ -102,6 +102,9 @@ const BootcampSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 })
 
 
@@ -131,11 +134,23 @@ BootcampSchema.pre('save', async function (next) {
         zipcode: loc[0].zipcode,
         country: loc[0].countryCode,
     }
+    // no need to send the address now that location is there
+    this.address = undefined
     next()
 })
 
-// no need to send the address now that location is there
-this.address = undefined
+BootcampSchema.pre('remove', async function (next) {
+    await this.model('Course').deleteMany({ bootcamp: this._id })
+    next()
+})
+
+//Reverse populate with virtuals
+BootcampSchema.virtual('courses', {
+    ref: 'Course', // which Schema to relate to?
+    localField: '_id', // in this Schema, which field is this one? => _id
+    foreignField: 'bootcamp', //in Course Schema, which field is this one? => bootcamp
+    justOne: false,
+})
 
 // 1st param: model name
 // 2nd param: schema name
