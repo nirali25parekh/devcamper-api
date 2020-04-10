@@ -4,21 +4,94 @@ const geocoder = require('../utils/geocoder')
 const ErrorResponse = require('../utils/errorResponse')
 
 
-// @example     /api/v1/bootcamps?<queries>
-// @desc        Get all bootcamps
-// @route       GET /api/v1/bootcamps
-// @access      Public
-// @queries     carreers[in]=Business   averageCost[lte]=10000
+// @example         /api/v1/bootcamps?<queries>
+// @desc            Get all bootcamps
+// @route           GET /api/v1/bootcamps
+// @access          Public
+// @queries         carreers[in]=Business   averageCost[lte]=10000  housing=true
+// @SelectQuery     select=name,description
+// @SortQuery       sort=averageCost        sort=-name
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-    /*filtering : mongo db docs: db.inventory.find( { qty: { $lte: 20 } } )
+    let query;
+
+    // Copy req.query
+    const reqQuery = { ...req.query }
+
+    // An array of fields to exclude
+    const removeFields = ['select', 'sort', 'page', 'limit']
+
+    // Loop over removeFields and delete them from reqQuery
+    // reqQuery => JSON contains all other than select
+    removeFields.forEach(param => delete reqQuery[param])
+
+    // Create query string,
+    // queryStr => String contains all other than select
+    let queryStr = JSON.stringify(reqQuery)
+
+    /* FILTERING : 
+    mongo db docs: db.inventory.find( { qty: { $lte: 20 } } )
     we got logs: { qty: { lte: 20 }}
-    we need $ sign before lte (less than equal to) */
-    let queryStr = JSON.stringify(req.query)
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-    const bootcamps = await Bootcamp.find(JSON.parse(queryStr))
+    we need $ sign before lte (less than equal to) 
+    Create operators($gt, $lte, $gte)   */
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`)
+
+    //Finding resource
+    query = Bootcamp.find(JSON.parse(queryStr))
+
+    /* SELECTION:
+    url:  select=name,description
+     express docs: db.inventory.select("name description")
+     we need <space> instead of <comma>
+     Select Fields if param present  */
+    if (req.query.select) {
+        const fields = req.query.select.split(',').join(' ')
+        // console.log(query)
+        query = query.select(fields)
+    }
+
+    // SORTING:
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ')
+        query = query.sort(sortBy)
+    } else {
+        query = query.sort('-createdAt')
+    }
+
+    // PAGINATION:
+    const page = parseInt(req.query.page , 10) || 1
+    const limit = parseInt(req.query.limit , 10) || 25
+    const startIndex = (page - 1) * limit 
+    const endIndex = page * limit
+    const total = await Bootcamp.countDocuments()
+
+    query = query.skip(startIndex).limit(limit)
+
+    // Executing whatever final query
+    const bootcamps = await query
+
+    //Pagination result
+    const pagination = {}
+
+    //if already on last page, don't show pagination.next
+    if(endIndex < total){
+        pagination.next = {
+            page: page + 1,
+            limit
+        } 
+    }
+     
+    // if already on page 1, don't show pagination.prev
+    if(startEndex > 0){
+        pagination.prev = {
+            page: page - 1,
+            limit
+        }
+    }
+
     res.status(200).json({
         success: true,
         count: bootcamps.length,
+        pagination: pagination,
         data: bootcamps
     })
 
