@@ -1,0 +1,2 @@
+the files that are uploaded, to view them, goto
+http://localhost:5000/uploads/<filename>
