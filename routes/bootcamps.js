@@ -18,6 +18,8 @@ const courseRouter = require('./courses')
 
 const router = express.Router()
 
+const { protect, authorize } = require('../middleware/auth')
+
 // Re-route into other resource routers
 // means if 'api/v1/bootcamps/:bootcampId/courses' hit, goto courseRouter
 router.use('/:bootcampId/courses', courseRouter)
@@ -26,22 +28,24 @@ router
     .route('/radius/:zipcode/:distance')
     .get(getBootcampsInRadius)
 
+    //make sure protect middleware before authorize middleware
+    // because authorize uses req.user which is set in  protect
 router
     .route('/:id/photo')
-    .put(bootcampPhotoUpload)
+    .put(protect, authorize('publisher', 'admin') , bootcampPhotoUpload)
 
 
 // base url => '/api/v1/bootcamps' app.use() middleware in server.js
 router
     .route('/')
     .get(advancedResults(Bootcamp, 'courses'), getBootcamps)
-    .post(createBootcamp)
+    .post(protect,  authorize('publisher', 'admin'), createBootcamp)
 
 router
     .route('/:id')
     .get(getBootcamp)
-    .put(updateBootcamp)
-    .delete(deleteBootcamp)
+    .put(protect, authorize('publisher', 'admin'), updateBootcamp)
+    .delete(protect, authorize('publisher', 'admin'),  deleteBootcamp)
 
 
 module.exports = router
