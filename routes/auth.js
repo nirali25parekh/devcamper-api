@@ -5,6 +5,8 @@ const {
     getMe,
     forgotPassword,
     resetPassword,
+    updateDetails,
+    updatePassword
 } = require('../controllers/auth')
 
 const router = express.Router()
@@ -19,6 +21,12 @@ router.route('/login')
 
 router.route('/me')
     .get(protect, getMe)
+
+router.route('/updatepassword')
+    .put(protect, updatePassword)
+
+router.route('/updatedetails')
+    .put(protect, updateDetails)
 
 router.route('/forgotpassword')
     .post(forgotPassword)
