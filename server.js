@@ -4,6 +4,7 @@ const dotenv = require('dotenv')
 const morgan = require('morgan')
 const colors = require('colors')
 const path = require('path')
+const cookieParser =  require('cookie-parser')
 const fileupload = require('express-fileupload')
 const errorHandler = require('./middleware/error')
 
@@ -16,6 +17,7 @@ dotenv.config({ path: './config/config.env' })
 //Route files
 const bootcamps = require('./routes/bootcamps')
 const courses = require('./routes/courses')
+const auth = require('./routes/auth')
 
 //connect to Database
 connectDB()
@@ -25,6 +27,9 @@ const app = express()
 
 // Body parser (included in express)
 app.use(express.json())
+
+// Cookie parser
+app.use(cookieParser())
 
 //Dev logging middleware
 if (process.env.NODE_ENV === 'development') {
@@ -40,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 //mount routers
 app.use('/api/v1/courses', courses)
 app.use('/api/v1/bootcamps', bootcamps)  
+app.use('/api/v1/auth', auth)
 
 // mount myMiddleware  //middleware tells app that whenever you see this url, go to that file
 app.use(errorHandler)
