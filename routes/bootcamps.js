@@ -10,6 +10,9 @@ const {
     bootcampPhotoUpload
 } = require('../controllers/bootcamps')
 
+const advancedResults = require('../middleware/advancedResults')
+const Bootcamp = require('../models/Bootcamp')
+
 //Include other resource routers
 const courseRouter = require('./courses')
 
@@ -19,10 +22,19 @@ const router = express.Router()
 // means if 'api/v1/bootcamps/:bootcampId/courses' hit, goto courseRouter
 router.use('/:bootcampId/courses', courseRouter)
 
+router
+    .route('/radius/:zipcode/:distance')
+    .get(getBootcampsInRadius)
+
+router
+    .route('/:id/photo')
+    .put(bootcampPhotoUpload)
+
+
 // base url => '/api/v1/bootcamps' app.use() middleware in server.js
 router
     .route('/')
-    .get(getBootcamps)
+    .get(advancedResults(Bootcamp, 'courses'), getBootcamps)
     .post(createBootcamp)
 
 router
@@ -31,13 +43,6 @@ router
     .put(updateBootcamp)
     .delete(deleteBootcamp)
 
-router
-    .route('/radius/:zipcode/:distance')
-    .get(getBootcampsInRadius)
-
-router
-    .route('/:id/photo')
-    .put(bootcampPhotoUpload)
 
 module.exports = router
 
