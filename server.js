@@ -7,6 +7,8 @@ const path = require('path')
 const cookieParser =  require('cookie-parser')
 const fileupload = require('express-fileupload')
 const mongoSanitize = require('express-mongo-sanitize')
+const helmet = require('helmet')
+const xssClean = require('xss-clean')
 const errorHandler = require('./middleware/error')
 
 //database files
@@ -46,6 +48,14 @@ app.use(fileupload())
 // even if username is {[gt]=""}, it matches and allows login)
 // hence to prevent that
 app.use(mongoSanitize())
+
+// Adds extra security headers
+app.use(helmet())
+
+// User may write names with html script tags <script> alert(1) </script>
+// hence to take care of this
+// Prevent XSS attacks 
+app.use(xssClean())
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')))
