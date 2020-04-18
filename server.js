@@ -6,6 +6,7 @@ const colors = require('colors')
 const path = require('path')
 const cookieParser =  require('cookie-parser')
 const fileupload = require('express-fileupload')
+const mongoSanitize = require('express-mongo-sanitize')
 const errorHandler = require('./middleware/error')
 
 //database files
@@ -40,6 +41,11 @@ if (process.env.NODE_ENV === 'development') {
 
 //File uploading 
 app.use(fileupload())
+
+// Sanitize data (when password matches
+// even if username is {[gt]=""}, it matches and allows login)
+// hence to prevent that
+app.use(mongoSanitize())
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')))
